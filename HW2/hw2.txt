@@ -1,0 +1,26 @@
+ics24199
+1. π class,country σ displacement>=32000 ∧ (numGuns<9 ∨ bore<15) (Classes)
+2. πcountry σtype='bb' (Classes) ∩ πcountry σtype='bc' (Classes)
+3. πclass (Classes) - πclass (Ships)
+4. πname,launched,numGuns,bore (σcountry='Japan' (Classes)|x|Ships)
+
+5.A=πname ((Ships))
+  B=πship ((Outcomes))
+  A-B
+
+6. A=πbattle (σresult='sunk' (Outcomes))
+   B=πbattle (σresult='damaged' (Outcomes))
+   C=πbattle (σresult='ok' (Outcomes))
+   A∩B∩C
+
+7. π s.ship,Outcomes.ship σ s.battle=Outcomes.battle and s.ship<Outcomes.ship and s.result='sunk' and Outcomes.result='sunk' (π s.ship, s.battle,s.result (ρ s (Outcomes)) x Outcomes)
+
+8. π Ships.name (ρ r1 π numGuns σ name = 'Royal Oak' (Ships⨝Classes) ⨝ (Ships⨝Classes))
+
+
+9. (π numGuns,class (Classes)) - (π Classes.numGuns, Classes.class σ Classes.numGuns<P.numGuns (Classes x ρ P (Classes)))
+
+
+10. A=π s.class,s.bore (ρ s (Classes))
+    B=π r.class,r.bore (ρ r (Classes))
+    π s.bore σ s.class<>r.class and r.class<>Classes.class and Classes.class<>s.class and s.bore=r.bore and r.bore=Classes.bore (A x B x Classes)

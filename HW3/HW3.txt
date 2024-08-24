@@ -1,0 +1,98 @@
+-- 1.
+SELECT camera, whn, reg
+FROM image
+WHERE camera = 10
+  AND whn < timestamp '2007-02-26 00:00:00.000';
+
+-- 2.
+SELECT name,address
+FROM owner,vehicle 
+where vehicle.id LIKE 'SO 02 PSP' AND vehicle.owner=owner.id; 
+
+-- 3.
+SELECT i.camera, COUNT(*) AS count
+FROM image i
+JOIN camera c ON i.camera = c.id
+WHERE c.perim IS NOT NULL
+GROUP BY i.camera
+ORDER BY i.camera;
+
+
+-- 4.
+SELECT DISTINCT o.name, o.address
+FROM owner o
+JOIN vehicle v ON o.id = v.owner
+JOIN permit p ON v.id = p.reg
+WHERE p.sdate = '2007-01-30'
+ORDER BY o.name;
+
+-- 5.
+SELECT o.name, o.address
+FROM owner o
+JOIN vehicle v ON o.id = v.owner
+GROUP BY o.id, o.name, o.address
+HAVING COUNT(v.id) > 5;
+
+-- 6.
+SELECT i.whn, v.id, o.name
+FROM image i
+JOIN vehicle v ON i.reg = v.id
+LEFT JOIN owner o ON v.owner = o.id
+WHERE i.camera = 10
+AND DATE(i.whn) = '2007-02-25';
+
+
+-- 7.
+SELECT o.name, COUNT(v.id) AS count
+FROM owner o
+JOIN vehicle v ON o.id = v.owner
+WHERE o.id IN (
+    SELECT o.id
+    FROM owner o
+    JOIN vehicle v ON o.id = v.owner
+    JOIN permit p ON v.id = p.reg
+    GROUP BY o.id, v.id
+    HAVING COUNT(p.reg) > 2
+)
+GROUP BY o.id, o.name
+HAVING COUNT(v.id) > 4;
+
+-- 8.
+SELECT p.chargetype, COUNT(*) AS permcount
+FROM permit p
+GROUP BY p.chargetype
+ORDER BY permcount DESC
+LIMIT 1;
+
+-- 9.
+select B.name, A.camera, A.whn, A.reg
+from (select image.camera,image.whn,image.reg
+from (camera  join image  on camera.id=image.camera)
+left join permit  on permit.reg=image.reg
+where camera.perim='IN' and
+((chargetype='Weekly' and sdate+interval'7'day<whn) or
+(chargetype='Monthly' and sdate+interval'1'month<whn) or
+(chargetype='Annual' and sdate+interval'12'month<whn) or
+(chargetype='Daily' and sdate+interval'1'day<whn) or
+whn<sdate or chargetype is null) ) A join
+(select owner.name,vehicle.id,vehicle.owner
+from owner  right join vehicle  on
+(owner.id=vehicle.owner)) B on B.id=A.reg
+order by A.camera,A.whn;
+
+-- 10.
+select reg
+from image
+join camera on image.camera=camera.id
+where camera.perim is NULL
+intersect 
+select reg
+from image
+join camera on image.camera=camera.id
+where camera.perim='IN'
+intersect
+select reg
+from image
+join camera on image.camera=camera.id
+where camera.perim='OUT';
+
